@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
-import { getAuthCookieNames, getSharedAuthCookieDomain } from "@/lib/supabase/session";
+import { getAuthCookieNames } from "@/lib/supabase/session";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -28,7 +28,6 @@ export async function GET(request: Request) {
   const response = NextResponse.redirect(new URL(next || "/player", url.origin));
   const cookieNames = getAuthCookieNames();
   const secure = url.protocol === "https:";
-  const cookieDomain = getSharedAuthCookieDomain(url.hostname);
 
   response.cookies.set(cookieNames.access, data.session.access_token, {
     httpOnly: true,
@@ -36,7 +35,6 @@ export async function GET(request: Request) {
     secure,
     path: "/",
     maxAge: data.session.expires_in,
-    ...(cookieDomain ? { domain: cookieDomain } : {}),
   });
   response.cookies.set(cookieNames.refresh, data.session.refresh_token, {
     httpOnly: true,
@@ -44,7 +42,6 @@ export async function GET(request: Request) {
     secure,
     path: "/",
     maxAge: 60 * 60 * 24 * 30,
-    ...(cookieDomain ? { domain: cookieDomain } : {}),
   });
 
   return response;
