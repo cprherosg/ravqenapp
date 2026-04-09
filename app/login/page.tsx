@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Image from "next/image";
 import { LoginForm } from "@/components/login-form";
 import { getServerAuthUser } from "@/lib/supabase/session";
 
@@ -13,6 +14,16 @@ export default async function LoginPage() {
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,#17383f_0%,#071015_45%,#020508_100%)] px-4 py-8 text-stone-50">
       <div className="mx-auto flex w-full max-w-md flex-col gap-4">
         <section className="rounded-[2rem] border border-cyan-300/12 bg-white/6 p-6 backdrop-blur">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-300/12 bg-cyan-300/10 p-2">
+            <Image
+              src="/ravqen-logo.svg"
+              alt="Ravqen logo"
+              width={40}
+              height={40}
+              className="h-auto w-auto"
+              priority
+            />
+          </div>
           <p className="text-xs uppercase tracking-[0.3em] text-cyan-100">
             Member access
           </p>

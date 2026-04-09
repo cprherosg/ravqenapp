@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { PublicFooter } from "@/components/public-footer";
 import { getAdminAccess } from "@/lib/auth/admin";
 import { getLaunchPlans } from "@/lib/billing";
@@ -73,8 +74,20 @@ export default async function Home() {
           <div className="absolute right-0 top-12 h-48 w-48 rounded-full bg-amber-300/10 blur-3xl" />
           <div className="relative grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
             <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-200/20 bg-cyan-300/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-cyan-100">
-                Ravqen
+              <div className="flex items-center gap-3">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-200/20 bg-cyan-300/10 p-2">
+                  <Image
+                    src="/ravqen-logo.svg"
+                    alt="Ravqen logo"
+                    width={40}
+                    height={40}
+                    className="h-auto w-auto"
+                    priority
+                  />
+                </div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-200/20 bg-cyan-300/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-cyan-100">
+                  Ravqen
+                </div>
               </div>
               <div className="space-y-4">
                 <p className="text-sm uppercase tracking-[0.28em] text-stone-300">

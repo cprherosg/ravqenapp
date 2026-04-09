@@ -11,6 +11,11 @@ export const metadata: Metadata = {
     title: "Ravqen",
     statusBarStyle: "black-translucent",
   },
+  icons: {
+    icon: "/ravqen-logo.svg",
+    shortcut: "/ravqen-logo.svg",
+    apple: "/ravqen-logo.svg",
+  },
 };
 
 export default function RootLayout({

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getSupportEmail } from "@/lib/billing";
 
 export function PublicFooter() {
@@ -8,7 +9,18 @@ export function PublicFooter() {
     <footer className="mt-10 rounded-[2rem] border border-white/10 bg-black/20 px-5 py-5 text-sm text-stone-300">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="font-semibold text-white">Ravqen</p>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-300/12 bg-cyan-300/10 p-2">
+              <Image
+                src="/ravqen-logo.svg"
+                alt="Ravqen logo"
+                width={28}
+                height={28}
+                className="h-auto w-auto"
+              />
+            </div>
+            <p className="font-semibold text-white">Ravqen</p>
+          </div>
           <p className="mt-1 text-xs uppercase tracking-[0.22em] text-stone-400">
             Structured solo training for commercial gyms
           </p>
