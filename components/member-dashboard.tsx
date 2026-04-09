@@ -123,7 +123,9 @@ export function MemberDashboard({
   const whyTodaySummary = completionInsights.recentPerformanceSummary.topImprovingMovement
     ? `Recent progress is building around ${completionInsights.recentPerformanceSummary.topImprovingMovement}. Today's session keeps that momentum moving while ${completionInsights.readiness.nextFocus.toLowerCase()}.`
     : workout.scienceNote;
-  const primaryWorkoutHref = legal.required ? "/player/legal" : "/player/workout";
+  const primaryWorkoutHref = getCanonicalAppHref(legal.required ? "/player/legal" : "/player/workout");
+  const historyHref = getCanonicalAppHref("/player/history");
+  const legalHref = getCanonicalAppHref("/player/legal");
   const adminHref = getCanonicalAppHref("/admin");
 
   return (
@@ -227,7 +229,7 @@ export function MemberDashboard({
                   Start today&apos;s workout
                 </Link>
                 <Link
-                  href="/player/history"
+                  href={historyHref}
                   className="rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white"
                 >
                   History
@@ -325,7 +327,7 @@ export function MemberDashboard({
                 />
                 <div className="mt-3">
                   <Link
-                    href="/player/legal"
+                    href={legalHref}
                     className="inline-flex rounded-full border border-cyan-300/20 bg-cyan-300/12 px-4 py-2 text-sm font-semibold text-cyan-50"
                   >
                     Sign waiver and terms
@@ -428,7 +430,7 @@ export function MemberDashboard({
               <p className="max-w-lg text-sm text-stone-300">
                 Recent effort, tracked exercises, and movement trends from your latest saved sessions.
               </p>
-              <Link href="/player/history" className="text-sm font-semibold text-cyan-100">
+              <Link href={historyHref} className="text-sm font-semibold text-cyan-100">
                 View all
               </Link>
             </div>
