@@ -10,6 +10,7 @@ export function LoginForm() {
   const [message, setMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mode, setMode] = useState<"login" | "reset">("login");
+  const canonicalAppUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() || null;
 
   const normalizeAuthMessage = (error: unknown, currentMode: "login" | "reset") => {
     const rawMessage =
@@ -52,7 +53,11 @@ export function LoginForm() {
           throw new Error(payload.message ?? "Unable to log in right now.");
         }
 
-        window.location.href = "/player";
+        if (canonicalAppUrl) {
+          window.location.href = new URL("/player", canonicalAppUrl).toString();
+        } else {
+          window.location.href = "/player";
+        }
       } else {
         const supabase = createBrowserSupabaseClient();
         const redirectTo =

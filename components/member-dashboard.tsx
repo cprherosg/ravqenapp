@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { MemberProfile } from "@/lib/admin-data";
+import { getCanonicalAppHref } from "@/lib/app-url";
 import type { DailyWorkout, ExercisePerformanceEntry } from "@/lib/types";
 
 type MemberDashboardProps = {
@@ -123,6 +124,7 @@ export function MemberDashboard({
     ? `Recent progress is building around ${completionInsights.recentPerformanceSummary.topImprovingMovement}. Today's session keeps that momentum moving while ${completionInsights.readiness.nextFocus.toLowerCase()}.`
     : workout.scienceNote;
   const primaryWorkoutHref = legal.required ? "/player/legal" : "/player/workout";
+  const adminHref = getCanonicalAppHref("/admin");
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,#17353c_0%,#071015_38%,#020507_100%)] px-4 py-5 text-stone-50">
@@ -146,7 +148,7 @@ export function MemberDashboard({
               <div className="flex flex-col items-end gap-2">
                 {isAdmin ? (
                   <Link
-                    href="/admin"
+                    href={adminHref}
                     className="rounded-full border border-cyan-300/25 bg-cyan-300/12 px-4 py-2 text-sm font-semibold text-cyan-50 transition hover:bg-cyan-300/20"
                   >
                     Admin
