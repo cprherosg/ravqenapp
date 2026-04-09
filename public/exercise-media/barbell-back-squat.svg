@@ -1,0 +1,14 @@
+<svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="600" fill="#E0F2FE"/>
+  <rect x="70" y="90" width="660" height="420" rx="36" fill="#DBEAFE"/>
+  <path d="M220 180H580" stroke="#0F172A" stroke-width="18" stroke-linecap="round"/>
+  <circle cx="220" cy="180" r="28" fill="#0F172A"/>
+  <circle cx="580" cy="180" r="28" fill="#0F172A"/>
+  <circle cx="400" cy="170" r="34" fill="#38BDF8"/>
+  <path d="M400 205L360 270L405 320L448 270L400 205Z" fill="#0F172A"/>
+  <path d="M350 232L260 182" stroke="#0F172A" stroke-width="18" stroke-linecap="round"/>
+  <path d="M450 232L540 182" stroke="#0F172A" stroke-width="18" stroke-linecap="round"/>
+  <path d="M384 320L338 405" stroke="#0F172A" stroke-width="20" stroke-linecap="round"/>
+  <path d="M424 320L472 405" stroke="#0F172A" stroke-width="20" stroke-linecap="round"/>
+  <text x="400" y="545" text-anchor="middle" fill="#0F172A" font-family="Arial, sans-serif" font-size="34" font-weight="700">BARBELL BACK SQUAT</text>
+</svg>

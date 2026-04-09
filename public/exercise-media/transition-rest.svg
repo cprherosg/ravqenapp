@@ -1,0 +1,8 @@
+<svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="600" fill="#07141A"/>
+  <rect x="70" y="90" width="660" height="420" rx="36" fill="#10242B"/>
+  <circle cx="400" cy="260" r="118" fill="#0EA5E9" fill-opacity="0.12" stroke="#38BDF8" stroke-width="16"/>
+  <path d="M400 188V270L452 312" stroke="#67E8F9" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="400" y="430" text-anchor="middle" fill="#E0F2FE" font-family="Arial, sans-serif" font-size="44" font-weight="700">TRANSITION / REST</text>
+  <text x="400" y="475" text-anchor="middle" fill="#94A3B8" font-family="Arial, sans-serif" font-size="24">Move station, adjust load, reset breathing</text>
+</svg>

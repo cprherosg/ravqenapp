@@ -1,0 +1,12 @@
+<svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="600" fill="#E0F2FE"/>
+  <rect x="70" y="90" width="660" height="420" rx="36" fill="#DBEAFE"/>
+  <circle cx="435" cy="155" r="32" fill="#38BDF8"/>
+  <path d="M435 192L380 255L443 312L502 246L435 192Z" fill="#0F172A"/>
+  <path d="M387 256L318 309" stroke="#0F172A" stroke-width="18" stroke-linecap="round"/>
+  <path d="M444 312L488 403" stroke="#0F172A" stroke-width="18" stroke-linecap="round"/>
+  <path d="M404 311L368 403" stroke="#0F172A" stroke-width="18" stroke-linecap="round"/>
+  <rect x="286" y="296" width="24" height="62" rx="10" fill="#F97316"/>
+  <rect x="490" y="280" width="24" height="62" rx="10" fill="#F97316"/>
+  <text x="400" y="545" text-anchor="middle" fill="#0F172A" font-family="Arial, sans-serif" font-size="34" font-weight="700">DUMBBELL RDL</text>
+</svg>
