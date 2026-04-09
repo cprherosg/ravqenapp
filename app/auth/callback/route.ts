@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
-import { getAuthCookieNames } from "@/lib/supabase/session";
+import { getAuthCookieNames, getLegacyAuthCookieNames } from "@/lib/supabase/session";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -27,6 +27,7 @@ export async function GET(request: Request) {
 
   const response = NextResponse.redirect(new URL(next || "/player", url.origin));
   const cookieNames = getAuthCookieNames();
+  const legacyCookieNames = getLegacyAuthCookieNames();
   const secure = url.protocol === "https:";
 
   response.cookies.set(cookieNames.access, data.session.access_token, {
@@ -42,6 +43,21 @@ export async function GET(request: Request) {
     secure,
     path: "/",
     maxAge: 60 * 60 * 24 * 30,
+  });
+
+  response.cookies.set(legacyCookieNames.access, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure,
+    path: "/",
+    maxAge: 0,
+  });
+  response.cookies.set(legacyCookieNames.refresh, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure,
+    path: "/",
+    maxAge: 0,
   });
 
   return response;

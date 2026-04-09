@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createPublicServerSupabaseClient } from "@/lib/supabase/public-server";
-import { getAuthCookieNames } from "@/lib/supabase/session";
+import { getAuthCookieNames, getLegacyAuthCookieNames } from "@/lib/supabase/session";
 
 export async function POST(request: Request) {
   const body = (await request.json()) as { email?: string; password?: string };
@@ -29,6 +29,7 @@ export async function POST(request: Request) {
 
   const response = NextResponse.json({ ok: true });
   const cookieNames = getAuthCookieNames();
+  const legacyCookieNames = getLegacyAuthCookieNames();
 
   response.cookies.set(cookieNames.access, data.session.access_token, {
     httpOnly: true,
@@ -43,6 +44,21 @@ export async function POST(request: Request) {
     secure: request.url.startsWith("https://"),
     path: "/",
     maxAge: 60 * 60 * 24 * 30,
+  });
+
+  response.cookies.set(legacyCookieNames.access, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: request.url.startsWith("https://"),
+    path: "/",
+    maxAge: 0,
+  });
+  response.cookies.set(legacyCookieNames.refresh, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: request.url.startsWith("https://"),
+    path: "/",
+    maxAge: 0,
   });
 
   return response;
