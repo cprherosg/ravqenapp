@@ -75,13 +75,13 @@ export default async function Home() {
           <div className="relative grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
             <div className="space-y-6">
               <div className="flex items-center gap-3">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-200/20 bg-cyan-300/10 p-2">
+                <div className="flex min-h-[5rem] items-center justify-center rounded-[1.6rem] border border-cyan-200/20 bg-cyan-300/10 px-4 py-3">
                   <Image
                     src="/ravqen-logo.svg"
                     alt="Ravqen logo"
-                    width={40}
-                    height={40}
-                    className="h-auto w-auto"
+                    width={240}
+                    height={74}
+                    className="h-auto w-full max-w-[15rem]"
                     priority
                   />
                 </div>

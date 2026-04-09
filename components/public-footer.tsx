@@ -10,13 +10,13 @@ export function PublicFooter() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-300/12 bg-cyan-300/10 p-2">
+            <div className="flex min-h-[3.5rem] items-center justify-center rounded-xl border border-cyan-300/12 bg-cyan-300/10 px-3 py-2">
               <Image
                 src="/ravqen-logo.svg"
                 alt="Ravqen logo"
-                width={28}
-                height={28}
-                className="h-auto w-auto"
+                width={116}
+                height={36}
+                className="h-auto w-full max-w-[7.25rem]"
               />
             </div>
             <p className="font-semibold text-white">Ravqen</p>

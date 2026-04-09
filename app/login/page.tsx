@@ -14,13 +14,13 @@ export default async function LoginPage() {
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,#17383f_0%,#071015_45%,#020508_100%)] px-4 py-8 text-stone-50">
       <div className="mx-auto flex w-full max-w-md flex-col gap-4">
         <section className="rounded-[2rem] border border-cyan-300/12 bg-white/6 p-6 backdrop-blur">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-300/12 bg-cyan-300/10 p-2">
+          <div className="flex min-h-[5.5rem] w-full items-center justify-center rounded-[1.6rem] border border-cyan-300/12 bg-cyan-300/10 px-4 py-4">
             <Image
               src="/ravqen-logo.svg"
               alt="Ravqen logo"
-              width={40}
-              height={40}
-              className="h-auto w-auto"
+              width={280}
+              height={88}
+              className="h-auto w-full max-w-[17rem]"
               priority
             />
           </div>
