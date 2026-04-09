@@ -151,6 +151,7 @@ export function MemberDashboard({
                 {isAdmin ? (
                   <Link
                     href={adminHref}
+                    prefetch={false}
                     className="rounded-full border border-cyan-300/25 bg-cyan-300/12 px-4 py-2 text-sm font-semibold text-cyan-50 transition hover:bg-cyan-300/20"
                   >
                     Admin
@@ -219,6 +220,7 @@ export function MemberDashboard({
               <div className="mt-5 hidden gap-2 sm:flex">
                 <Link
                   href={access.allowed ? primaryWorkoutHref : "#"}
+                  prefetch={false}
                   aria-disabled={!access.allowed}
                   className={`flex-1 rounded-full px-5 py-3 text-center text-sm font-semibold shadow-[0_12px_30px_rgba(103,232,249,0.22)] ${
                     access.allowed
@@ -230,6 +232,7 @@ export function MemberDashboard({
                 </Link>
                 <Link
                   href={historyHref}
+                  prefetch={false}
                   className="rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white"
                 >
                   History
@@ -430,7 +433,7 @@ export function MemberDashboard({
               <p className="max-w-lg text-sm text-stone-300">
                 Recent effort, tracked exercises, and movement trends from your latest saved sessions.
               </p>
-              <Link href={historyHref} className="text-sm font-semibold text-cyan-100">
+              <Link href={historyHref} prefetch={false} className="text-sm font-semibold text-cyan-100">
                 View all
               </Link>
             </div>
