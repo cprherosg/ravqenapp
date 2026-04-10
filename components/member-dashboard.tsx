@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { MemberProfile } from "@/lib/admin-data";
-import { getCanonicalAppHref } from "@/lib/app-url";
 import type { DailyWorkout, ExercisePerformanceEntry } from "@/lib/types";
 
 type MemberDashboardProps = {
@@ -123,10 +122,10 @@ export function MemberDashboard({
   const whyTodaySummary = completionInsights.recentPerformanceSummary.topImprovingMovement
     ? `Recent progress is building around ${completionInsights.recentPerformanceSummary.topImprovingMovement}. Today's session keeps that momentum moving while ${completionInsights.readiness.nextFocus.toLowerCase()}.`
     : workout.scienceNote;
-  const primaryWorkoutHref = getCanonicalAppHref(legal.required ? "/player/legal" : "/player/workout");
-  const historyHref = getCanonicalAppHref("/player/history");
-  const legalHref = getCanonicalAppHref("/player/legal");
-  const adminHref = getCanonicalAppHref("/admin");
+  const primaryWorkoutHref = legal.required ? "/player/legal" : "/player/workout";
+  const historyHref = "/player/history";
+  const legalHref = "/player/legal";
+  const adminHref = "/admin";
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,#17353c_0%,#071015_38%,#020507_100%)] px-4 py-5 text-stone-50">
