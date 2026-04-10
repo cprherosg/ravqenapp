@@ -79,6 +79,7 @@ export function LoginForm({ initialMessage = null }: LoginFormProps) {
           <p className="mb-2 text-sm font-medium text-stone-200">Email address</p>
           <input
             type="email"
+            name="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             required
@@ -92,6 +93,7 @@ export function LoginForm({ initialMessage = null }: LoginFormProps) {
             <p className="mb-2 text-sm font-medium text-stone-200">Password</p>
             <input
               type="password"
+              name="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required
