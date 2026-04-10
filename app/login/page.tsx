@@ -3,12 +3,28 @@ import Image from "next/image";
 import { LoginForm } from "@/components/login-form";
 import { getServerAuthUser } from "@/lib/supabase/session";
 
-export default async function LoginPage() {
+type LoginPageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+function getInitialErrorMessage(rawValue: string | string[] | undefined) {
+  if (!rawValue) {
+    return null;
+  }
+
+  const value = Array.isArray(rawValue) ? rawValue[0] : rawValue;
+  return value?.trim() ? value : null;
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
   const authUser = await getServerAuthUser();
 
   if (authUser) {
     redirect("/player");
   }
+
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const initialMessage = getInitialErrorMessage(resolvedSearchParams?.error);
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,#17383f_0%,#071015_45%,#020508_100%)] px-4 py-8 text-stone-50">
@@ -33,7 +49,7 @@ export default async function LoginPage() {
           </p>
         </section>
 
-        <LoginForm />
+        <LoginForm initialMessage={initialMessage} />
 
         <section className="rounded-[2rem] border border-white/10 bg-[#091317] p-5">
           <p className="text-xs uppercase tracking-[0.24em] text-cyan-100">First time here?</p>

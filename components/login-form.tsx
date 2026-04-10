@@ -4,13 +4,16 @@ import Link from "next/link";
 import { useState } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
-export function LoginForm() {
+type LoginFormProps = {
+  initialMessage?: string | null;
+};
+
+export function LoginForm({ initialMessage = null }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(initialMessage);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mode, setMode] = useState<"login" | "reset">("login");
-  const canonicalAppUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() || null;
 
   const normalizeAuthMessage = (error: unknown, currentMode: "login" | "reset") => {
     const rawMessage =
@@ -30,52 +33,33 @@ export function LoginForm() {
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    if (mode === "login") {
+      setIsSubmitting(true);
+      setMessage(null);
+      return;
+    }
+
     event.preventDefault();
     setIsSubmitting(true);
     setMessage(null);
 
     try {
-      if (mode === "login") {
-        const response = await fetch("/auth/password-login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email,
-            password,
-          }),
-        });
+      const supabase = createBrowserSupabaseClient();
+      const redirectTo =
+        typeof window === "undefined"
+          ? undefined
+          : `${window.location.origin}/auth/password-reset`;
 
-        const payload = (await response.json()) as { ok: boolean; message?: string };
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo,
+      });
 
-        if (!payload.ok) {
-          throw new Error(payload.message ?? "Unable to log in right now.");
-        }
-
-        if (canonicalAppUrl) {
-          window.location.href = new URL("/player", canonicalAppUrl).toString();
-        } else {
-          window.location.href = "/player";
-        }
-      } else {
-        const supabase = createBrowserSupabaseClient();
-        const redirectTo =
-          typeof window === "undefined"
-            ? undefined
-            : `${window.location.origin}/auth/password-reset`;
-
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo,
-        });
-
-        if (error) {
-          throw error;
-        }
-
-        setMessage("Password reset link sent. Check your email to continue.");
-        setEmail("");
+      if (error) {
+        throw error;
       }
+
+      setMessage("Password reset link sent. Check your email to continue.");
+      setEmail("");
     } catch (error) {
       setMessage(normalizeAuthMessage(error, mode));
     } finally {
@@ -85,7 +69,12 @@ export function LoginForm() {
 
   return (
     <section className="rounded-[2rem] border border-white/10 bg-[#091317] p-5">
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form
+        onSubmit={handleSubmit}
+        action={mode === "login" ? "/auth/password-login" : undefined}
+        method={mode === "login" ? "post" : undefined}
+        className="space-y-4"
+      >
         <label className="block">
           <p className="mb-2 text-sm font-medium text-stone-200">Email address</p>
           <input
