@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { headers } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
 
@@ -17,8 +17,9 @@ function createServerSessionClient() {
 }
 
 export async function getServerAuthUser() {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get(ACCESS_COOKIE)?.value;
+  const headerStore = await headers();
+  const cookieHeader = headerStore.get("cookie") ?? "";
+  const accessToken = getCookieValue(cookieHeader, ACCESS_COOKIE);
 
   if (!accessToken) {
     return null;
@@ -32,6 +33,20 @@ export async function getServerAuthUser() {
   }
 
   return data.user;
+}
+
+function getCookieValue(cookieHeader: string, name: string) {
+  const prefix = `${name}=`;
+
+  for (const part of cookieHeader.split(";")) {
+    const value = part.trim();
+
+    if (value.startsWith(prefix)) {
+      return value.slice(prefix.length);
+    }
+  }
+
+  return null;
 }
 
 export function getAuthCookieNames() {
