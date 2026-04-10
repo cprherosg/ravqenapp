@@ -16,36 +16,16 @@ function createServerSessionClient() {
   });
 }
 
-export async function createServerAuthedSupabaseClient() {
+export async function getServerAuthUser() {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get(ACCESS_COOKIE)?.value;
-  const refreshToken = cookieStore.get(REFRESH_COOKIE)?.value;
 
-  if (!accessToken || !refreshToken) {
+  if (!accessToken) {
     return null;
   }
 
   const supabase = createServerSessionClient();
-  const { error } = await supabase.auth.setSession({
-    access_token: accessToken,
-    refresh_token: refreshToken,
-  });
-
-  if (error) {
-    return null;
-  }
-
-  return supabase;
-}
-
-export async function getServerAuthUser() {
-  const supabase = await createServerAuthedSupabaseClient();
-
-  if (!supabase) {
-    return null;
-  }
-
-  const { data, error } = await supabase.auth.getUser();
+  const { data, error } = await supabase.auth.getUser(accessToken);
 
   if (error || !data.user) {
     return null;
