@@ -8,20 +8,6 @@ type LoginFormProps = {
   initialMessage?: string | null;
 };
 
-function getCookieDomain() {
-  if (typeof window === "undefined") {
-    return undefined;
-  }
-
-  const host = window.location.hostname;
-
-  if (host === "localhost" || host.endsWith(".localhost") || /^\d+\.\d+\.\d+\.\d+$/.test(host)) {
-    return undefined;
-  }
-
-  return host;
-}
-
 function setBrowserCookie(name: string, value: string, maxAgeSeconds: number) {
   const parts = [
     `${name}=${encodeURIComponent(value)}`,
@@ -29,12 +15,6 @@ function setBrowserCookie(name: string, value: string, maxAgeSeconds: number) {
     `Max-Age=${maxAgeSeconds}`,
     "SameSite=Lax",
   ];
-  const domain = getCookieDomain();
-
-  if (domain) {
-    parts.push(`Domain=${domain}`);
-  }
-
   if (typeof window !== "undefined" && window.location.protocol === "https:") {
     parts.push("Secure");
   }
@@ -49,12 +29,6 @@ function clearBrowserCookie(name: string) {
     "Max-Age=0",
     "SameSite=Lax",
   ];
-  const domain = getCookieDomain();
-
-  if (domain) {
-    parts.push(`Domain=${domain}`);
-  }
-
   if (typeof window !== "undefined" && window.location.protocol === "https:") {
     parts.push("Secure");
   }
