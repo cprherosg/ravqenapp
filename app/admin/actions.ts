@@ -181,16 +181,33 @@ export async function updateMemberAction(
     }
 
     const supabase = createAdminSupabaseClient();
+    const normalizedEmail = input.email.trim().toLowerCase();
+    const normalizedName = input.name.trim();
     const normalizedWeeklyLimit =
       input.tierType === "weekly_limit" ? (input.weeklyLimit ?? 3) : 0;
     const normalizedSessionsRemaining =
       input.tierType === "monthly_unlimited" ? 9999 : input.sessionsRemaining;
 
+    const { error: authUserError } = await supabase.auth.admin.updateUserById(input.id, {
+      email: normalizedEmail,
+      email_confirm: true,
+      user_metadata: {
+        full_name: normalizedName,
+      },
+    });
+
+    if (authUserError) {
+      return {
+        ok: false,
+        message: authUserError.message,
+      };
+    }
+
     const { error: profileError } = await supabase
       .from("profiles")
       .update({
-        email: input.email.trim().toLowerCase(),
-        full_name: input.name.trim(),
+        email: normalizedEmail,
+        full_name: normalizedName,
         last_workout_summary: input.lastWorkoutSummary,
       })
       .eq("id", input.id);
