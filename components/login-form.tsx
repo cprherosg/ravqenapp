@@ -8,6 +8,60 @@ type LoginFormProps = {
   initialMessage?: string | null;
 };
 
+function getCookieDomain() {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  const host = window.location.hostname;
+
+  if (host === "localhost" || host.endsWith(".localhost") || /^\d+\.\d+\.\d+\.\d+$/.test(host)) {
+    return undefined;
+  }
+
+  return host;
+}
+
+function setBrowserCookie(name: string, value: string, maxAgeSeconds: number) {
+  const parts = [
+    `${name}=${encodeURIComponent(value)}`,
+    "Path=/",
+    `Max-Age=${maxAgeSeconds}`,
+    "SameSite=Lax",
+  ];
+  const domain = getCookieDomain();
+
+  if (domain) {
+    parts.push(`Domain=${domain}`);
+  }
+
+  if (typeof window !== "undefined" && window.location.protocol === "https:") {
+    parts.push("Secure");
+  }
+
+  document.cookie = parts.join("; ");
+}
+
+function clearBrowserCookie(name: string) {
+  const parts = [
+    `${name}=`,
+    "Path=/",
+    "Max-Age=0",
+    "SameSite=Lax",
+  ];
+  const domain = getCookieDomain();
+
+  if (domain) {
+    parts.push(`Domain=${domain}`);
+  }
+
+  if (typeof window !== "undefined" && window.location.protocol === "https:") {
+    parts.push("Secure");
+  }
+
+  document.cookie = parts.join("; ");
+}
+
 export function LoginForm({ initialMessage = null }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,18 +87,32 @@ export function LoginForm({ initialMessage = null }: LoginFormProps) {
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    if (mode === "login") {
-      setIsSubmitting(true);
-      setMessage(null);
-      return;
-    }
-
     event.preventDefault();
     setIsSubmitting(true);
     setMessage(null);
 
     try {
       const supabase = createBrowserSupabaseClient();
+
+      if (mode === "login") {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email.trim().toLowerCase(),
+          password,
+        });
+
+        if (error || !data.session) {
+          throw error ?? new Error("Unable to log in right now.");
+        }
+
+        setBrowserCookie("ravqen-v2-access-token", data.session.access_token, data.session.expires_in);
+        setBrowserCookie("ravqen-v2-refresh-token", data.session.refresh_token, 60 * 60 * 24 * 30);
+        clearBrowserCookie("ravqen-access-token");
+        clearBrowserCookie("ravqen-refresh-token");
+
+        window.location.assign("/player");
+        return;
+      }
+
       const redirectTo =
         typeof window === "undefined"
           ? undefined
@@ -69,12 +137,7 @@ export function LoginForm({ initialMessage = null }: LoginFormProps) {
 
   return (
     <section className="rounded-[2rem] border border-white/10 bg-[#091317] p-5">
-      <form
-        onSubmit={handleSubmit}
-        action={mode === "login" ? "/auth/password-login" : undefined}
-        method={mode === "login" ? "post" : undefined}
-        className="space-y-4"
-      >
+      <form onSubmit={handleSubmit} className="space-y-4">
         <label className="block">
           <p className="mb-2 text-sm font-medium text-stone-200">Email address</p>
           <input
