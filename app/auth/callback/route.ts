@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
-import { getAuthCookieNames, getLegacyAuthCookieNames } from "@/lib/supabase/session";
+import {
+  getAuthCookieDomain,
+  getAuthCookieNames,
+  getLegacyAuthCookieNames,
+} from "@/lib/supabase/session";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -29,12 +33,14 @@ export async function GET(request: Request) {
   const cookieNames = getAuthCookieNames();
   const legacyCookieNames = getLegacyAuthCookieNames();
   const secure = url.protocol === "https:";
+  const cookieDomain = getAuthCookieDomain();
 
   response.cookies.set(cookieNames.access, data.session.access_token, {
     httpOnly: true,
     sameSite: "lax",
     secure,
     path: "/",
+    domain: cookieDomain,
     maxAge: data.session.expires_in,
   });
   response.cookies.set(cookieNames.refresh, data.session.refresh_token, {
@@ -42,6 +48,7 @@ export async function GET(request: Request) {
     sameSite: "lax",
     secure,
     path: "/",
+    domain: cookieDomain,
     maxAge: 60 * 60 * 24 * 30,
   });
 
@@ -50,6 +57,7 @@ export async function GET(request: Request) {
     sameSite: "lax",
     secure,
     path: "/",
+    domain: cookieDomain,
     maxAge: 0,
   });
   response.cookies.set(legacyCookieNames.refresh, "", {
@@ -57,6 +65,7 @@ export async function GET(request: Request) {
     sameSite: "lax",
     secure,
     path: "/",
+    domain: cookieDomain,
     maxAge: 0,
   });
 

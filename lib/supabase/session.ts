@@ -62,3 +62,23 @@ export function getLegacyAuthCookieNames() {
     refresh: LEGACY_REFRESH_COOKIE,
   };
 }
+
+export function getAuthCookieDomain() {
+  const raw = process.env.NEXT_PUBLIC_APP_URL?.trim();
+
+  if (!raw) {
+    return undefined;
+  }
+
+  try {
+    const host = new URL(raw).hostname;
+
+    if (host === "localhost" || host.endsWith(".localhost") || /^\d+\.\d+\.\d+\.\d+$/.test(host)) {
+      return undefined;
+    }
+
+    return host;
+  } catch {
+    return undefined;
+  }
+}

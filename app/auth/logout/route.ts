@@ -1,17 +1,23 @@
 import { NextResponse } from "next/server";
-import { getAuthCookieNames, getLegacyAuthCookieNames } from "@/lib/supabase/session";
+import {
+  getAuthCookieDomain,
+  getAuthCookieNames,
+  getLegacyAuthCookieNames,
+} from "@/lib/supabase/session";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const response = NextResponse.redirect(new URL("/login", url.origin));
   const cookieNames = getAuthCookieNames();
   const legacyCookieNames = getLegacyAuthCookieNames();
+  const cookieDomain = getAuthCookieDomain();
 
   response.cookies.set(cookieNames.access, "", {
     httpOnly: true,
     sameSite: "lax",
     secure: url.protocol === "https:",
     path: "/",
+    domain: cookieDomain,
     maxAge: 0,
   });
   response.cookies.set(cookieNames.refresh, "", {
@@ -19,6 +25,7 @@ export async function GET(request: Request) {
     sameSite: "lax",
     secure: url.protocol === "https:",
     path: "/",
+    domain: cookieDomain,
     maxAge: 0,
   });
   response.cookies.set(legacyCookieNames.access, "", {
@@ -26,6 +33,7 @@ export async function GET(request: Request) {
     sameSite: "lax",
     secure: url.protocol === "https:",
     path: "/",
+    domain: cookieDomain,
     maxAge: 0,
   });
   response.cookies.set(legacyCookieNames.refresh, "", {
@@ -33,6 +41,7 @@ export async function GET(request: Request) {
     sameSite: "lax",
     secure: url.protocol === "https:",
     path: "/",
+    domain: cookieDomain,
     maxAge: 0,
   });
 

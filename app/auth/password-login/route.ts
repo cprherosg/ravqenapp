@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { createPublicServerSupabaseClient } from "@/lib/supabase/public-server";
-import { getAuthCookieNames, getLegacyAuthCookieNames } from "@/lib/supabase/session";
+import {
+  getAuthCookieDomain,
+  getAuthCookieNames,
+  getLegacyAuthCookieNames,
+} from "@/lib/supabase/session";
 
 export async function POST(request: Request) {
   const contentType = request.headers.get("content-type") ?? "";
@@ -46,37 +50,64 @@ export async function POST(request: Request) {
 
   const response = isJsonRequest
     ? NextResponse.json({ ok: true })
-    : NextResponse.redirect(new URL("/player", request.url), 303);
+    : new NextResponse(
+        `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="refresh" content="0;url=/player" />
+    <title>Signing you in…</title>
+  </head>
+  <body style="font-family:system-ui,sans-serif;background:#041014;color:#fff;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px;">
+    <p>Signing you in… If you are not redirected automatically, <a href="/player" style="color:#67e8f9;">continue to Ravqen</a>.</p>
+    <script>window.location.replace('/player');</script>
+  </body>
+</html>`,
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "text/html; charset=utf-8",
+            "Cache-Control": "no-store",
+          },
+        },
+      );
   const cookieNames = getAuthCookieNames();
   const legacyCookieNames = getLegacyAuthCookieNames();
+  const cookieDomain = getAuthCookieDomain();
+  const secure = request.url.startsWith("https://");
 
   response.cookies.set(cookieNames.access, data.session.access_token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: request.url.startsWith("https://"),
+    secure,
     path: "/",
+    domain: cookieDomain,
     maxAge: data.session.expires_in,
   });
   response.cookies.set(cookieNames.refresh, data.session.refresh_token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: request.url.startsWith("https://"),
+    secure,
     path: "/",
+    domain: cookieDomain,
     maxAge: 60 * 60 * 24 * 30,
   });
 
   response.cookies.set(legacyCookieNames.access, "", {
     httpOnly: true,
     sameSite: "lax",
-    secure: request.url.startsWith("https://"),
+    secure,
     path: "/",
+    domain: cookieDomain,
     maxAge: 0,
   });
   response.cookies.set(legacyCookieNames.refresh, "", {
     httpOnly: true,
     sameSite: "lax",
-    secure: request.url.startsWith("https://"),
+    secure,
     path: "/",
+    domain: cookieDomain,
     maxAge: 0,
   });
 
