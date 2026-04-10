@@ -124,6 +124,85 @@ export async function markWorkoutInProgressAction(input: {
   }
 }
 
+export async function stopWorkoutEarlyAction(input: {
+  sessionId: string;
+  intensity: IntensityLevel;
+}) {
+  try {
+    const supabase = createAdminSupabaseClient();
+    const { data: sessionRow, error: sessionFetchError } = await supabase
+      .from("workout_sessions")
+      .select("id,user_id,status,workout_slug")
+      .eq("id", input.sessionId)
+      .single();
+
+    if (sessionFetchError || !sessionRow) {
+      throw sessionFetchError ?? new Error("Unable to find workout session.");
+    }
+
+    if (sessionRow.status !== "completed" && sessionRow.status !== "skipped") {
+      const { error: sessionError } = await supabase
+        .from("workout_sessions")
+        .update({
+          status: "skipped",
+          intensity_selected: input.intensity,
+          completed_at: new Date().toISOString(),
+        })
+        .eq("id", input.sessionId);
+
+      if (sessionError) {
+        throw sessionError;
+      }
+
+      const { data: membershipRow } = await supabase
+        .from("memberships")
+        .select("sessions_remaining,tier_type")
+        .eq("user_id", sessionRow.user_id)
+        .single();
+
+      if (
+        usesSessionCredits(membershipRow?.tier_type) &&
+        membershipRow.sessions_remaining > 0
+      ) {
+        const { error: membershipError } = await supabase
+          .from("memberships")
+          .update({
+            sessions_remaining: membershipRow.sessions_remaining - 1,
+          })
+          .eq("user_id", sessionRow.user_id);
+
+        if (membershipError) {
+          throw membershipError;
+        }
+      }
+
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          last_workout_summary: "Workout ended early. Session credit was still used.",
+        })
+        .eq("id", sessionRow.user_id);
+
+      if (profileError) {
+        throw profileError;
+      }
+    }
+
+    revalidatePath("/player");
+    revalidatePath("/player/workout");
+    revalidatePath("/player/history");
+    return { ok: true as const };
+  } catch (error) {
+    return {
+      ok: false as const,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Unable to stop workout right now.",
+    };
+  }
+}
+
 export async function saveWorkoutCompletionAction(input: {
   sessionId: string;
   intensity: IntensityLevel;

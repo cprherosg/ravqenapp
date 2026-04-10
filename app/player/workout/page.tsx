@@ -12,6 +12,10 @@ export default async function WorkoutSessionPage() {
 
   const bootstrap = await getPlayerBootstrap(authUser.id);
 
+  if (!bootstrap.access.allowed) {
+    redirect("/player");
+  }
+
   if (bootstrap.legal.required) {
     redirect("/player/legal");
   }

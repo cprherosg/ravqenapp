@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const items = [
+  { href: "/player", label: "Back to Player" },
   { href: "/admin", label: "Membership Console" },
   { href: "/admin/programs", label: "Program Schedule" },
   { href: "/admin/programs/library", label: "Program Library" },

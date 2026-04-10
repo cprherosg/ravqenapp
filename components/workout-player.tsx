@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   markWorkoutInProgressAction,
   saveWorkoutCompletionAction,
+  stopWorkoutEarlyAction,
 } from "@/app/player/actions";
 import type { MemberProfile } from "@/lib/admin-data";
 import { DemoMedia } from "@/components/demo-media";
@@ -209,7 +210,6 @@ export function WorkoutPlayer({
   const router = useRouter();
   const audioContextRef = useRef<AudioContext | null>(null);
   const lastCountdownCueRef = useRef<string | null>(null);
-  const lastPhaseStartCueRef = useRef<string | null>(null);
   const sessionIntensity: IntensityLevel = "base";
   const phases = useMemo<WorkoutPhase[]>(() => {
     const built: WorkoutPhase[] = [];
@@ -308,6 +308,7 @@ export function WorkoutPlayer({
   const [hasStartedSession, setHasStartedSession] = useState(false);
   const replayCount = 0;
   const [isSavingFeedback, setIsSavingFeedback] = useState(false);
+  const [isStoppingWorkout, setIsStoppingWorkout] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState({
@@ -333,6 +334,34 @@ export function WorkoutPlayer({
     });
   }, [hasStartedSession, sessionId, sessionIntensity]);
 
+  const triggerPhaseStartCue = useCallback(async (phase: WorkoutPhase | null | undefined) => {
+    if (!phase) {
+      return;
+    }
+
+    const AudioContextClass =
+      typeof window !== "undefined"
+        ? window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+        : undefined;
+
+    if (!AudioContextClass) {
+      return;
+    }
+
+    const context = audioContextRef.current ?? new AudioContextClass();
+    audioContextRef.current = context;
+
+    if (context.state === "suspended") {
+      try {
+        await context.resume();
+      } catch {
+        return;
+      }
+    }
+
+    playPhaseStartBoom(context, phase.phaseType);
+  }, []);
+
   const goToIndex = useCallback(
     (nextIndex: number) => {
       const boundedIndex = Math.max(0, Math.min(nextIndex, phases.length - 1));
@@ -346,15 +375,17 @@ export function WorkoutPlayer({
   const goToNext = useCallback(() => {
     if (currentIndex < phases.length - 1) {
       ensureSessionStarted();
+      const nextPhase = phases[currentIndex + 1];
       goToIndex(currentIndex + 1);
       setIsRunning(true);
+      void triggerPhaseStartCue(nextPhase);
       return;
     }
 
     setRemainingSeconds(0);
     setIsRunning(false);
     setIsCompleted(true);
-  }, [currentIndex, ensureSessionStarted, goToIndex, phases.length]);
+  }, [currentIndex, ensureSessionStarted, goToIndex, phases, triggerPhaseStartCue]);
 
   useEffect(() => {
     if (!isRunning) {
@@ -415,47 +446,6 @@ export function WorkoutPlayer({
     };
 
     void runBeep();
-  }, [currentIndex, isCompleted, isRunning, phases, remainingSeconds]);
-
-  useEffect(() => {
-    const currentPhase = phases[currentIndex];
-
-    if (!currentPhase || !isRunning || isCompleted || remainingSeconds !== currentPhase.exercise.durationSec) {
-      return;
-    }
-
-    const cueKey = `${currentPhase.id}:start`;
-    if (lastPhaseStartCueRef.current === cueKey) {
-      return;
-    }
-
-    lastPhaseStartCueRef.current = cueKey;
-
-    const AudioContextClass =
-      typeof window !== "undefined"
-        ? window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
-        : undefined;
-
-    if (!AudioContextClass) {
-      return;
-    }
-
-    const runBoom = async () => {
-      const context = audioContextRef.current ?? new AudioContextClass();
-      audioContextRef.current = context;
-
-      if (context.state === "suspended") {
-        try {
-          await context.resume();
-        } catch {
-          return;
-        }
-      }
-
-      playPhaseStartBoom(context, currentPhase.phaseType);
-    };
-
-    void runBoom();
   }, [currentIndex, isCompleted, isRunning, phases, remainingSeconds]);
 
   const currentPhase = phases[currentIndex];
@@ -584,9 +574,62 @@ export function WorkoutPlayer({
   const goToPrevious = () => {
     if (currentIndex > 0) {
       ensureSessionStarted();
+      const previousPhase = phases[currentIndex - 1];
       goToIndex(currentIndex - 1);
       setIsRunning(true);
+      void triggerPhaseStartCue(previousPhase);
     }
+  };
+
+  const toggleRunning = () => {
+    if (!access.allowed) {
+      return;
+    }
+
+    ensureSessionStarted();
+    setIsRunning((running) => {
+      const nextRunning = !running;
+
+      if (nextRunning && remainingSeconds === currentPhase.exercise.durationSec) {
+        void triggerPhaseStartCue(currentPhase);
+      }
+
+      return nextRunning;
+    });
+  };
+
+  const stopWorkout = () => {
+    if (!sessionId || isStoppingWorkout) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Stop this workout now? Your workout will end immediately and the session credit will still be used.",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setIsStoppingWorkout(true);
+    setSaveError(null);
+    setSaveMessage(null);
+
+    startTransition(async () => {
+      const result = await stopWorkoutEarlyAction({
+        sessionId,
+        intensity: sessionIntensity,
+      });
+
+      if (!result.ok) {
+        setSaveError(result.message);
+        setIsStoppingWorkout(false);
+        return;
+      }
+
+      router.push("/player");
+      router.refresh();
+    });
   };
 
   if (isCompleted) {
@@ -1066,12 +1109,22 @@ export function WorkoutPlayer({
                 {access.completedThisWeek} session{access.completedThisWeek === 1 ? "" : "s"} completed this week
               </p>
             </div>
-            <Link
-              href="/auth/logout"
-              className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
-            >
-              Log out
-            </Link>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={stopWorkout}
+                disabled={!sessionId || isStoppingWorkout}
+                className="rounded-full border border-rose-400/25 bg-rose-400/12 px-4 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-400/18 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isStoppingWorkout ? "Stopping..." : "Stop workout"}
+              </button>
+              <Link
+                href="/auth/logout"
+                className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+              >
+                Log out
+              </Link>
+            </div>
           </div>
         </section>
 
@@ -1208,13 +1261,7 @@ export function WorkoutPlayer({
           <div className="mt-4 hidden gap-2 sm:flex">
             <button
               type="button"
-              onClick={() => {
-                if (!access.allowed) {
-                  return;
-                }
-                ensureSessionStarted();
-                setIsRunning((running) => !running);
-              }}
+              onClick={toggleRunning}
               disabled={!access.allowed}
               className="flex-1 rounded-full bg-cyan-300 px-5 py-3 text-sm font-semibold text-slate-950 shadow-[0_12px_30px_rgba(103,232,249,0.22)] disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -1235,6 +1282,14 @@ export function WorkoutPlayer({
             >
               Skip
             </button>
+            <button
+              type="button"
+              onClick={stopWorkout}
+              disabled={!sessionId || isStoppingWorkout}
+              className="flex-1 rounded-full border border-rose-400/25 bg-rose-400/12 px-5 py-3 text-sm font-semibold text-rose-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isStoppingWorkout ? "Stopping..." : "Stop"}
+            </button>
           </div>
         </section>
 
@@ -1242,19 +1297,13 @@ export function WorkoutPlayer({
           <div className="mx-auto flex w-full max-w-md flex-col gap-2">
             <button
               type="button"
-              onClick={() => {
-                if (!access.allowed) {
-                  return;
-                }
-                ensureSessionStarted();
-                setIsRunning((running) => !running);
-              }}
+              onClick={toggleRunning}
               disabled={!access.allowed}
               className="w-full rounded-full bg-cyan-300 px-5 py-4 text-base font-semibold text-slate-950 shadow-[0_12px_30px_rgba(103,232,249,0.22)] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isRunning ? "Pause session" : "Start session"}
             </button>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={goToPrevious}
@@ -1269,6 +1318,14 @@ export function WorkoutPlayer({
                 className="rounded-full border border-white/10 bg-white/5 px-5 py-3.5 text-sm font-semibold text-white"
               >
                 Skip
+              </button>
+              <button
+                type="button"
+                onClick={stopWorkout}
+                disabled={!sessionId || isStoppingWorkout}
+                className="rounded-full border border-rose-400/25 bg-rose-400/12 px-5 py-3.5 text-sm font-semibold text-rose-100 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isStoppingWorkout ? "Stopping..." : "Stop"}
               </button>
             </div>
           </div>

@@ -645,16 +645,14 @@ export async function getPlayerBootstrap(
       activeMember.weeklyLimit === null ||
       (completedThisWeek ?? 0) < activeMember.weeklyLimit;
     const statusAllowed = activeMember.status === "active";
-    const canReuseExistingSession = Boolean(existingSession?.id);
-
     let accessMessage: string | null = null;
     if (!statusAllowed) {
       accessMessage = "This membership is not active right now. Update the member status to unlock workouts.";
     } else if (!categoryAllowed) {
       accessMessage = `${workout.category} is not enabled for this member's access tier.`;
-    } else if (!hasSessionPackCredit && !canReuseExistingSession) {
+    } else if (!hasSessionPackCredit) {
       accessMessage = "This member has no session credits remaining.";
-    } else if (!withinWeeklyLimit && !canReuseExistingSession) {
+    } else if (!withinWeeklyLimit) {
       accessMessage = `This member has already used their ${activeMember.weeklyLimit} weekly sessions.`;
     }
     const readiness = buildReadinessState({
